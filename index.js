@@ -1,17 +1,30 @@
 require("dotenv").config();
 const express = require("express");
-const cors = require("cors");
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const jwt = require("jsonwebtoken");
 
 const app = express();
 
-app.use(
-  cors({
-    origin: "http://localhost:5173",
-    credentials: true,
-  })
-);
+const cors = require("cors");
+
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://comforting-pika-5cedd0.netlify.app",
+];
+
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  credentials: true,
+};
+
+app.use(cors(corsOptions));
+
 app.use(express.json());
 
 // MongoDB
@@ -310,14 +323,20 @@ app.get("/feedback", async (req, res) => {
   const user = await db.collection("users").findOne({ email });
   if (!user) return res.status(404).json({ message: "User not found" });
 
-  const dailyFeedback =
-    user.attendance?.map((day) => ({
+  const dailyFeedback = (user.attendance || []).map((day) => {
+    const performanceScore = (user.performance || []).find(
+      (p) => p.date === day.date
+    )?.score;
+
+    return {
       date: day.date,
       clockIn: day.clockIn || "Not Recorded",
       clockOut: day.clockOut || "Not Recorded",
       communicationRating: day.communicationRating || 0,
       payroll: day.payroll || "N/A",
-    })) || [];
+      performanceScore: performanceScore ?? null,
+    };
+  });
 
   res.json({ dailyFeedback });
 });
