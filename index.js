@@ -71,7 +71,7 @@ function verifyToken(req, res, next) {
 
 // Routes
 app.get("/", (req, res) => {
-  res.send("🚀 EMS Backend is running");
+  res.send(" EMS Backend is running");
 });
 
 app.get("/users", async (req, res) => {
