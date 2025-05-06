@@ -27,7 +27,7 @@ app.use(cors(corsOptions));
 
 app.use(express.json());
 
-// MongoDB
+// MongoDB Connection
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.g9xsrko.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
 const client = new MongoClient(uri, {
   serverApi: {
@@ -43,14 +43,14 @@ async function run() {
     await client.connect();
     db = client.db("ems-demo");
     await db.command({ ping: 1 });
-    console.log("✅ Connected to MongoDB");
+    console.log(" Connected to MongoDB");
   } catch (err) {
-    console.error("❌ DB connection error:", err);
+    console.error(" DB connection error:", err);
   }
 }
 run().catch(console.dir);
 
-// JWT
+// JWT 
 app.post("/jwt", (req, res) => {
   const user = req.body;
   const token = jwt.sign(user, process.env.JWT_SECRET, { expiresIn: "7d" });
@@ -120,7 +120,7 @@ app.post("/users", async (req, res) => {
   });
 });
 
-// Attendance + Performance Handling
+// Handling Attendance and Performance
 app.patch("/users/:id", async (req, res) => {
   const { id } = req.params;
   const {
@@ -175,7 +175,7 @@ app.patch("/users/:id", async (req, res) => {
       { $set: { "attendance.$.payroll": payroll } }
     );
 
-    // If date doesn't exist, add it as a new attendance record
+    // Adding A new Record If date doesnt exist
     if (result.matchedCount === 0) {
       await userCollection.updateOne(
         { _id: new ObjectId(id) },
@@ -221,13 +221,13 @@ app.patch("/users/:id", async (req, res) => {
       );
       return res
         .status(201)
-        .json({ message: "Communication added to new entry." });
+        .json({ message: "Communication has been added to new entry." });
     }
     return res.status(200).json({ message: "Communication updated" });
   }
 
   if (action === "updateRole") {
-    if (!role) return res.status(400).json({ message: "Role is required" });
+    if (!role) return res.status(400).json({ message: "Role is required here" });
 
     const result = await userCollection.updateOne(
       { _id: new ObjectId(id) },
@@ -235,7 +235,7 @@ app.patch("/users/:id", async (req, res) => {
     );
     return result.modifiedCount === 0
       ? res.status(404).json({ message: "Failed to update role" })
-      : res.status(200).json({ message: "Role updated" });
+      : res.status(200).json({ message: "Role has been updated" });
   }
 
   res.status(400).json({ message: "Invalid action" });
@@ -259,7 +259,7 @@ app.patch("/users/:id/performance", async (req, res) => {
       { _id: new ObjectId(id), "performance.date": date },
       { $set: { "performance.$.score": score } }
     );
-    return res.status(200).json({ message: "Performance updated" });
+    return res.status(200).json({ message: "Performance has been updated" });
   }
 
   await userCollection.updateOne(
@@ -315,7 +315,7 @@ app.patch("/users/:id/attendance/delete", async (req, res) => {
   res.send({ message: "Attendance & performance deleted" });
 });
 
-// Express route - Add in your backend route file
+// FeedBack Routes
 app.get("/feedback", async (req, res) => {
   const email = req.query.email;
   if (!email) return res.status(400).json({ message: "Email required" });
