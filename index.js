@@ -1,3 +1,4 @@
+//Installed express js, dotenv, mongodb
 require("dotenv").config();
 const express = require("express");
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
@@ -68,7 +69,7 @@ function verifyToken(req, res, next) {
     next();
   });
 }
-
+//I Used Crud Operations here(put, patch, delete)
 // Routes
 app.get("/", (req, res) => {
   res.send(" EMS Backend is running");
